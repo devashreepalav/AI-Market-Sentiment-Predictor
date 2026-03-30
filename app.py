@@ -32,34 +32,43 @@ days_to_show = st.sidebar.slider("Days of History", 30, 365, 60)
 st.title(f"🚀 AI Market Insight: {ticker}")
 
 # --- 4. FETCH DATA ---
-data = yf.download(ticker, period=f"{days_to_show+50}d", interval="1d")
-
-if not data.empty:
-    # This line fixes the 'KeyError' by flattening the column names
-    if isinstance(data.columns, pd.MultiIndex):
-        data.columns = data.columns.get_level_values(0)
-
-    # Feature Engineering for Prediction
-    data['Returns'] = data['Close'].pct_change()
-    data['MA10'] = data['Close'].rolling(window=10).mean()
-    data['MA50'] = data['Close'].rolling(window=50).mean()
+try:
+    data = yf.download(ticker, period=f"{days_to_show+50}d", interval="1d")
     
-    # --- 5. PREDICTION UI ---
-    if model and not latest_row.isnull().values.any():
-        # Prepare inputs exactly as the model expects
-        inputs = latest_row[model_features]
-        prediction = model.predict(inputs)[0]
-        confidence = model.predict_proba(inputs).max() * 100
+    if not data.empty:
+        # 1. Fix the yfinance Multi-Index issue (Crucial for NVDA/TSLA)
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.get_level_values(0)
+
+        # 2. Feature Engineering
+        data['Returns'] = data['Close'].pct_change()
+        data['MA10'] = data['Close'].rolling(window=10).mean()
+        data['MA50'] = data['Close'].rolling(window=50).mean()
         
-        col_pred, col_conf = st.columns(2)
-        with col_pred:
-            label = "📈 UPWARD TREND" if prediction == 1 else "📉 DOWNWARD TREND"
-            color = "green" if prediction == 1 else "red"
-            st.markdown(f"### AI Prediction (Tomorrow): <span style='color:{color}'>{label}</span>", unsafe_allow_html=True)
-        with col_conf:
-            st.metric("Model Confidence", f"{confidence:.1f}%")
+        # 3. Create latest_row safely
+        latest_row = data.tail(1)
+        
+        # --- 5. PREDICTION UI ---
+        # Check if the model exists and latest_row has no missing values
+        if model is not None and not latest_row.isnull().values.any():
+            inputs = latest_row[model_features]
+            prediction = model.predict(inputs)[0]
+            confidence = model.predict_proba(inputs).max() * 100
+            
+            col_pred, col_conf = st.columns(2)
+            with col_pred:
+                label = "📈 UPWARD TREND" if prediction == 1 else "📉 DOWNWARD TREND"
+                color = "green" if prediction == 1 else "red"
+                st.markdown(f"### AI Prediction (Tomorrow): <span style='color:{color}'>{label}</span>", unsafe_allow_html=True)
+            with col_conf:
+                st.metric("Model Confidence", f"{confidence:.1f}%")
+        else:
+            st.warning("🔄 Calculating features... please wait or check if model files are uploaded.")
     else:
-        st.warning("⚠️ Model files not found or insufficient data for prediction. Please run your training notebook first.")
+        st.error(f"❌ No data found for ticker: {ticker}")
+
+except Exception as e:
+    st.error(f"⚠️ Error fetching data: {e}")
 
     # --- 6. VISUALIZATION ---
     st.divider()
