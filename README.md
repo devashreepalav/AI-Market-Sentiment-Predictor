@@ -1,4 +1,4 @@
-Key Features
+🚀 Key Features
 Predictive Modeling: Uses a Random Forest Classifier to analyze technical indicators and predict the next day's price direction (Up/Down).
 
 NLP Sentiment Analysis: Integrates NewsAPI and TextBlob to quantify the "mood" of real-time financial headlines.
