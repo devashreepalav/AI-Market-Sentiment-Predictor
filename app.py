@@ -35,13 +35,14 @@ st.title(f"🚀 AI Market Insight: {ticker}")
 data = yf.download(ticker, period=f"{days_to_show+50}d", interval="1d")
 
 if not data.empty:
+    # This line fixes the 'KeyError' by flattening the column names
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
+
     # Feature Engineering for Prediction
     data['Returns'] = data['Close'].pct_change()
     data['MA10'] = data['Close'].rolling(window=10).mean()
     data['MA50'] = data['Close'].rolling(window=50).mean()
-    
-    # Get the very latest row for the AI to predict on
-    latest_row = data.tail(1)
     
     # --- 5. PREDICTION UI ---
     if model and not latest_row.isnull().values.any():
