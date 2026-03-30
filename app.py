@@ -33,43 +33,49 @@ st.title(f"🚀 AI Market Insight: {ticker}")
 
 # --- 4. FETCH DATA ---
 try:
-    data = yf.download(ticker, period=f"{days_to_show+50}d", interval="1d")
+    # Use auto_adjust=True to help standardize columns
+    data = yf.download(ticker, period=f"{days_to_show+50}d", interval="1d", auto_adjust=True)
     
     if not data.empty:
-        # 1. Fix the yfinance Multi-Index issue (Crucial for NVDA/TSLA)
+        # 🔥 THE CRITICAL FIX: Strip ticker names from multi-index columns
         if isinstance(data.columns, pd.MultiIndex):
-            data.columns = data.columns.get_level_values(0)
-
-        # 2. Feature Engineering
-        data['Returns'] = data['Close'].pct_change()
-        data['MA10'] = data['Close'].rolling(window=10).mean()
-        data['MA50'] = data['Close'].rolling(window=50).mean()
-        
-        # 3. Create latest_row safely
-        latest_row = data.tail(1)
-        
-        # --- 5. PREDICTION UI ---
-        # Check if the model exists and latest_row has no missing values
-        if model is not None and not latest_row.isnull().values.any():
-            inputs = latest_row[model_features]
-            prediction = model.predict(inputs)[0]
-            confidence = model.predict_proba(inputs).max() * 100
-            
-            col_pred, col_conf = st.columns(2)
-            with col_pred:
-                label = "📈 UPWARD TREND" if prediction == 1 else "📉 DOWNWARD TREND"
-                color = "green" if prediction == 1 else "red"
-                st.markdown(f"### AI Prediction (Tomorrow): <span style='color:{color}'>{label}</span>", unsafe_allow_html=True)
-            with col_conf:
-                st.metric("Model Confidence", f"{confidence:.1f}%")
+            data.columns = [col[0] if isinstance(col, tuple) else col for col in data.columns]
         else:
-            st.warning("🔄 Calculating features... please wait or check if model files are uploaded.")
+            # Even if it's not multi-index, force standard names
+            data.columns = data.columns.str.capitalize()
+
+        # Ensure we have the basic columns needed
+        required_cols = ['Close', 'Volume']
+        if all(col in data.columns for col in required_cols):
+            # Feature Engineering
+            data['Returns'] = data['Close'].pct_change()
+            data['MA10'] = data['Close'].rolling(window=10).mean()
+            data['MA50'] = data['Close'].rolling(window=50).mean()
+            
+            # Create latest_row
+            latest_row = data.tail(1)
+            
+            # --- 5. PREDICTION UI ---
+            if model is not None and not latest_row.isnull().values.any():
+                # Re-order and select only the features the model was trained on
+                inputs = latest_row[model_features]
+                prediction = model.predict(inputs)[0]
+                confidence = model.predict_proba(inputs).max() * 100
+                
+                col_pred, col_conf = st.columns(2)
+                with col_pred:
+                    label = "📈 UPWARD TREND" if prediction == 1 else "📉 DOWNWARD TREND"
+                    color = "green" if prediction == 1 else "red"
+                    st.markdown(f"### AI Prediction (Tomorrow): <span style='color:{color}'>{label}</span>", unsafe_allow_html=True)
+                with col_conf:
+                    st.metric("Model Confidence", f"{confidence:.1f}%")
+        else:
+            st.error(f"Missing required columns. Found: {list(data.columns)}")
     else:
         st.error(f"❌ No data found for ticker: {ticker}")
 
 except Exception as e:
-    st.error(f"⚠️ Error fetching data: {e}")
-
+    st.error(f"⚠️ Error: {e}")
     # --- 6. VISUALIZATION ---
     st.divider()
     col_chart, col_news = st.columns([2, 1])
