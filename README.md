@@ -1,7 +1,7 @@
 # 📈 AI-Powered Market Sentiment & Trend Predictor
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_svg)](https://ai-market-sentiment-predictor-mbbjqunmnmqidrccqnnn5l.streamlit.app/)
-[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/YOUR_USERNAME/AI-Market-Sentiment-Predictor)
+[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/devashreepalav/AI-Market-Sentiment-Predictor)
 
 An end-to-end Machine Learning application that fetches real-time financial data, processes technical indicators, and uses a **Random Forest Classifier** to predict stock direction with built-in confidence metrics.
 
