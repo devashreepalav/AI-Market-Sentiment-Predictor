@@ -8,7 +8,7 @@ from textblob import TextBlob
 # --- 1. SETTINGS & API CONFIG ---
 # Get your key at https://newsapi.org/
 NEWS_API_KEY = 'e008faf9743c4c33b332718686b32bad' 
-newsapi = NewsApiClient(api_key=NEWS_API_KEY)
+newsapi = NewsApiClient(api_key=e008faf9743c4c33b332718686b32bad)
 
 st.set_page_config(page_title="AI Market Vibe", layout="wide", page_icon="📈")
 
