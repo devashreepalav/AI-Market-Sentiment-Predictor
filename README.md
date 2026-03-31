@@ -1,57 +1,38 @@
-📈 AI-Powered Market Sentiment & Trend Predictor
-A full-stack Machine Learning application that fetches real-time financial data, processes technical indicators, and uses a Random Forest Classifier to predict stock direction with built-in confidence metrics.
+# 📈 AI-Powered Market Sentiment & Trend Predictor
 
-🔗 Live Application
-https://ai-market-sentiment-predictor-mbbjqunmnmqidrccqnnn5l.streamlit.app/
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_svg)](https://ai-market-sentiment-predictor-mbbjqunmnmqidrccqnnn5l.streamlit.app/)
+[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/YOUR_USERNAME/AI-Market-Sentiment-Predictor)
 
-🌟 Why This Project Matters
+An end-to-end Machine Learning application that fetches real-time financial data, processes technical indicators, and uses a **Random Forest Classifier** to predict stock direction with built-in confidence metrics.
+
+---
+
+## 🔗 Live Application
+### **[🚀 Click Here to View the Live App]
+(https://ai-market-sentiment-predictor-mbbjqunmnmqidrccqnnn5l.streamlit.app/)**
+
+---
+
+## 🌟 Why This Project Matters
 Financial markets are noisy. This tool helps cut through the noise by combining:
+* **Quantitative Data:** 50-day and 10-day Moving Averages + Daily Returns.
+* **Qualitative Data:** Real-time news sentiment analysis via NLP.
+* **Probabilistic AI:** Instead of a simple "Up/Down," the model provides a **Confidence Percentage** to help gauge risk.
 
-Quantitative Data: 50-day and 10-day Moving Averages + Daily Returns.
+## 🛠️ Tech Stack
+* **Backend:** Python 3.12
+* **Machine Learning:** Scikit-Learn (Random Forest)
+* **Data API:** Yahoo Finance (`yfinance`)
+* **NLP:** TextBlob (Sentiment Polarity)
+* **Frontend:** Streamlit Framework
+* **Deployment:** GitHub & Streamlit Community Cloud
 
-Qualitative Data: Real-time news sentiment analysis via NLP.
+## 📊 How It Works
+1. **Data Ingestion:** Fetches 2 years of price data and latest headlines via API.
+2. **Feature Engineering:** Handles `yfinance` Multi-Index structures to calculate rolling averages.
+3. **Inference:** Uses a pre-trained `.pkl` model to generate predictions on live data.
 
-Probabilistic AI: Instead of a simple "Up/Down," the model provides a Confidence Percentage to help gauge risk.
-
-🛠️ The Tech Stack
-Backend: Python 3.12
-
-Machine Learning: Scikit-Learn (Random Forest), Joblib
-
-Data API: Yahoo Finance (yfinance)
-
-NLP: TextBlob (Sentiment Polarity)
-
-Frontend: Streamlit Framework
-
-Deployment: GitHub & Streamlit Community Cloud
-
-📊 How I Solved Key Engineering Challenges
-Data Flattening: Handled yfinance Multi-Index header issues to ensure the model works seamlessly across different tickers (AAPL, TSLA, NVDA).
-
-Feature Engineering: Implemented automated calculation of rolling averages and percentage changes on live-streamed data.
-
-Error Resilience: Built a "Nuclear Option" data cleaning pipeline to handle missing values and API inconsistencies.
-
-⚙️ How to Run Locally
-Clone the Repo:
-
-Bash
-git clone https://github.com/devashreepalav/AI-Market-Sentiment-Predictor.git
-cd AI-Market-Sentiment-Predictor
-Install Dependencies:
-
-Bash
-pip install -r requirements.txt
-Launch the Dashboard:
-
-Bash
-streamlit run app.py
-📁 Project Structure
-app.py: The main UI and logic for the live dashboard.
-
-main.ipynb: The research and training phase of the model.
-
-stock_predictor_model.pkl: The saved AI weights (The "Brain").
-
-requirements.txt: List of all Python libraries needed.
+## ⚙️ Setup & Installation
+1. **Clone the repo:** `git clone https://github.com/devashreepalav/AI-Market-Sentiment-Predictor.git`
+2. **Install requirements:** `pip install -r requirements.txt`
+3. **Run app:** `streamlit run app.py`
