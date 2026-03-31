@@ -34,24 +34,25 @@ st.title(f"🚀 AI Market Insight: {ticker}")
 
 # --- 4. FETCH & FIX DATA ---
 try:
-    # We download 100 extra days to ensure Moving Averages have enough data to calculate
-    data = yf.download(ticker, period=f"{days_to_show + 100}d", interval="1d")
+    # Fetching data with auto_adjust=True to simplify the OHLC structure
+    data = yf.download(ticker, period=f"{days_to_show + 100}d", interval="1d", auto_adjust=True)
 
     if not data.empty:
-        # 🔥 THE CRITICAL FIX: Flatten the Multi-Index columns
-        # This removes the ticker name (e.g., 'AAPL') from the header so the model can read it
+        # 🔥 THE BULLETPROOF FIX:
+        # No matter what, we only keep the first level of names (Close, Volume, etc.)
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
         
-        # Ensure column names are standard (Capitalized)
-        data.columns = [col.capitalize() for col in data.columns]
+        # Reset column names to standard strings to remove any hidden ticker names
+        data.columns = [str(col) for col in data.columns]
 
-        # Feature Engineering (Must match your Training Notebook)
+        # Force calculate the EXACT features your model is looking for
+        # We use ['Close'] specifically to avoid any multi-column confusion
         data['Returns'] = data['Close'].pct_change()
         data['MA10'] = data['Close'].rolling(window=10).mean()
         data['MA50'] = data['Close'].rolling(window=50).mean()
         
-        # Clean up empty rows from the start
+        # Drop the first 50 empty rows
         data = data.dropna()
         
         if not data.empty:
@@ -59,11 +60,18 @@ try:
 
             # --- 5. PREDICTION UI ---
             if model is not None:
-                # Select only the features the model was trained on
-                inputs = latest_row[model_features]
+                # We create a brand new DataFrame with ONLY the 5 features the model needs
+                # This bypasses any "Index" or "Multi-Index" errors entirely
+                input_data = pd.DataFrame([{
+                    'Close': float(latest_row['Close'].iloc[0]),
+                    'Volume': float(latest_row['Volume'].iloc[0]),
+                    'MA10': float(latest_row['MA10'].iloc[0]),
+                    'MA50': float(latest_row['MA50'].iloc[0]),
+                    'Returns': float(latest_row['Returns'].iloc[0])
+                }])
                 
-                prediction = model.predict(inputs)[0]
-                confidence = model.predict_proba(inputs).max() * 100
+                prediction = model.predict(input_data)[0]
+                confidence = model.predict_proba(input_data).max() * 100
                 
                 col_pred, col_conf = st.columns(2)
                 with col_pred:
@@ -75,27 +83,11 @@ try:
             
             # --- 6. VISUALIZATION ---
             st.divider()
-            col_chart, col_news = st.columns([2, 1])
+            st.subheader(f"Price History: {ticker}")
+            st.line_chart(data['Close'].tail(days_to_show))
             
-            with col_chart:
-                st.subheader("Price History & Trends")
-                st.line_chart(data['Close'].tail(days_to_show))
-                
-            with col_news:
-                st.subheader("Latest News Sentiment")
-                try:
-                    articles = newsapi.get_everything(q=ticker, language='en', sort_by='publishedAt')
-                    if articles['articles']:
-                        for art in articles['articles'][:5]:
-                            score = TextBlob(art['title']).sentiment.polarity
-                            mood = "🟢" if score > 0 else "🔴" if score < 0 else "⚪"
-                            st.write(f"{mood} [{art['title']}]({art['url']})")
-                    else:
-                        st.write("No recent news found.")
-                except:
-                    st.info("Add a NewsAPI Key to see sentiment analysis!")
         else:
-            st.warning("Not enough data to calculate Moving Averages. Try another ticker.")
+            st.warning("Not enough data to calculate indicators. Try a longer history.")
     else:
         st.error(f"❌ No data found for ticker: {ticker}")
 
