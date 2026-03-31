@@ -5,12 +5,13 @@ import pandas as pd
 from newsapi import NewsApiClient
 from textblob import TextBlob
 
-# --- 1. SETTINGS & API CONFIG ---
-# Get your key at https://newsapi.org/
-NEWS_API_KEY = 'e008faf9743c4c33b332718686b32bad' 
-newsapi = NewsApiClient(api_key=NEWS_API_KEY)
+# Replace the old NewsAPI line with this:
+try:
+    NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
+except:
+    NEWS_API_KEY = "e008faf9743c4c33b332718686b32bad"
 
-st.set_page_config(page_title="AI Market Vibe", layout="wide", page_icon="📈")
+newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
 # --- 2. LOAD TRAINED MODEL ---
 @st.cache_resource
